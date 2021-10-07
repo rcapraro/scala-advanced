@@ -36,7 +36,7 @@ object DarkSugars {
     val aSweetThread = new Thread(() => println("sweet, scala!"))
 
     abstract class AnAbstractType {
-      def implenented: Int = 42
+      def implemented: Int = 42
 
       def f(a: Int): Unit
     }

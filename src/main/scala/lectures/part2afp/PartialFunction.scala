@@ -21,7 +21,7 @@ object PartialFunction {
     }
 
     // Function from domain {1,2,5} to Int
-    // This is partial function fromt Int to Int
+    // This is partial function from Int to Int
 
     val aPartialFunction: PartialFunction[Int, Int] = {
       case 1 => 42
