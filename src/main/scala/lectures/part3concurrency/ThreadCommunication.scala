@@ -163,7 +163,7 @@ object ThreadCommunication {
             println(s"[consumer $id] consumed " + x)
 
             // notify somebody - cons or prod
-            buffer.notify()
+            buffer.notifyAll()
           }
 
           Thread.sleep(random.nextInt(500))
@@ -188,7 +188,7 @@ object ThreadCommunication {
             buffer.enqueue(i)
 
             // notify somebody - cons or prod
-            buffer.notify()
+            buffer.notifyAll()
 
             i += 1
           }
