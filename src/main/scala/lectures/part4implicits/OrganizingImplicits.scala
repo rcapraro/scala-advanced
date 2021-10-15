@@ -52,7 +52,7 @@ object OrganizingImplicits {
     println(persons.sorted)
 
     case class Purchase(nUnits: Int, unitPrice: Double) {
-      def totalPrice: Int = nUnits * unitPrice
+      def totalPrice: Double = nUnits * unitPrice
     }
 
     object Purchase {
@@ -67,7 +67,6 @@ object OrganizingImplicits {
     object UnitPriceOrdering {
       implicit val unitPriceOrdering: Ordering[Purchase] = Ordering.fromLessThan((a, b) => a.unitPrice < b.unitPrice)
     }
-
 
   }
 
