@@ -1,8 +1,9 @@
 package lectures.part3concurrency
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future, Promise}
 import scala.util.{Failure, Random, Success}
+import scala.concurrent.duration.*
 
 object FuturesPromises {
 
@@ -96,6 +97,63 @@ object FuturesPromises {
     }
 
     val fallbackResult = SocialNetwork.fetchProfile("unknow id").fallbackTo(SocialNetwork.fetchProfile("fb-id.0-dummy"))
+
+    // small online banking app
+    case class User(name: String)
+    case class Transaction(sender: String, receiver: String, amount: Double, status: String)
+
+    object BankingApp {
+      val name = "Rock the JVM banking"
+
+      def fetchUser(name: String): Future[User] = Future {
+        // simulates fetching from the DB
+        Thread.sleep(500)
+        User(name)
+      }
+
+      def createTransaction(user: User, merchantName: String, amount: Double): Future[Transaction] = Future {
+        // simulates some processes
+        Thread.sleep(1000)
+        Transaction(user.name, merchantName, amount, "Success")
+      }
+
+      def purchase(userName: String, item: String, merchantName: String, cost: Double): String = {
+        // fetch the user from the DB
+        // create a transaction
+        // wait for the transaction to finish!
+        val transactionStatusFuture = for {
+          user <- fetchUser(userName)
+          transaction <- createTransaction(user, merchantName, cost)
+        } yield transaction.status
+
+        // blocks until the transaction is complete
+        Await.result(transactionStatusFuture, 2.seconds) //implicit conversions -> pimp my library
+      }
+    }
+
+    println(BankingApp.purchase("Richard", "iPhone 12", "rock the jvm store", 3000))
+
+    // promises
+    val promise = Promise[Int] () // "controller over a future
+    val future = promise.future
+
+    // thread 1 - "consumer"
+    future.onComplete {
+      case Success(result) => print(s"[consumer] I've received $result")
+      case Failure(exception) => ()
+    }
+
+    // thread 2 - producer
+    val producer = new Thread(() => {
+      println("[producer] crunching numbers...")
+      Thread.sleep(500)
+      // "fulfilling" the promise
+      promise.success(42) // could be promise.failure(exception)
+      println("[producer] done")
+    })
+
+    producer.start()
+    Thread.sleep(1000)
 
   }
 
