@@ -1,9 +1,11 @@
 package lectures.part3concurrency
 
+import java.awt.Taskbar.Feature
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.*
 import scala.concurrent.{Await, Future, Promise}
 import scala.util.{Failure, Random, Success}
-import scala.concurrent.duration.*
+import scala.util.Try
 
 object FuturesPromises {
 
@@ -134,12 +136,12 @@ object FuturesPromises {
     println(BankingApp.purchase("Richard", "iPhone 12", "rock the jvm store", 3000))
 
     // promises
-    val promise = Promise[Int] () // "controller over a future
+    val promise = Promise[Int]() // "controller over a future
     val future = promise.future
 
     // thread 1 - "consumer"
     future.onComplete {
-      case Success(result) => print(s"[consumer] I've received $result")
+      case Success(result) => println(s"[consumer] I've received $result")
       case Failure(exception) => ()
     }
 
@@ -155,6 +157,61 @@ object FuturesPromises {
     producer.start()
     Thread.sleep(1000)
 
+    def fulfillImmediatly[T](value: T): Future[T] = Future.successful(value)
+
+    def inSequence[A, B](first: Future[A], second: Future[B]): Future[B] =
+      first.flatMap(_ => second)
+
+    def first[T](fa: Future[T], fb: Future[T]): Future[T] = {
+      val promise = Promise[T]
+      fa.onComplete(promise.tryComplete)
+      fb.onComplete(promise.tryComplete)
+      promise.future
+    }
+
+    def last[T](fa: Future[T], fb: Future[T]): Future[T] = {
+      // 1 promise which both futures will try to complete
+      // 2 promise which the LAST future will complete
+      val bothPromise = Promise[T]
+      val lastPromise = Promise[T]
+
+      val checkAndComplete = (result: Try[T]) => if(!bothPromise.tryComplete(result)) lastPromise.complete(result)
+
+      fa.onComplete(checkAndComplete)
+      fb.onComplete(checkAndComplete)
+      lastPromise.future
+    }
+
+    val fast = Future {
+      Thread.sleep(100)
+      "fast"
+    }
+
+    val slow = Future {
+      Thread.sleep(200)
+      "slow"
+    }
+
+    first(fast, slow).foreach(println)
+    last(fast, slow).foreach(println)
+
+    def retryUntil[T](action: () => Future[T], condition: T => Boolean): Future[T] =
+      action()
+        .filter(condition)
+        .recoverWith {
+          case _ => retryUntil(action, condition)
+        }
+
+    val random = new Random()
+    val action = () => Future {
+      Thread.sleep(100)
+      val nextValue = random.nextInt(100)
+      println("generated " +  nextValue)
+      nextValue
+    }
+    retryUntil(action, (x: Int) => x > 90).foreach(result => println("settled at " + result))
+
+    Thread.sleep(10000)
   }
 
 }
