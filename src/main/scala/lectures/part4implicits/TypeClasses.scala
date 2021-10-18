@@ -108,7 +108,7 @@ object TypeClasses {
     def htmlBoilerPlate[T](content: T)(implicit serializer: HTMLSerializer[T]): String =
       s"<html><body>${content.toHTML(serializer)}</body></html>"
 
-    // sweeter ! context bound tells the compiler to inject an implicit parameter of type HTMLSerialzier of type T
+    // sweeter ! context bound tells the compiler to inject an implicit parameter of type HTMLSerializer of T
     def htmlSugar[T : HTMLSerializer](content: T): String =
       s"<html><body>${content.toHTML}</body></html>"
 

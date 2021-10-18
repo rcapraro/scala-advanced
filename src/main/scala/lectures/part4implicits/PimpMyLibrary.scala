@@ -61,7 +61,7 @@ object PimpMyLibrary {
     implicit def enrich(value: Int): RichAltInt = new RichAltInt(value)
 
     // danger zone
-    implicit def intToBoolean(i: Int): Boolean = i == 1  //avoid implicit def !
+    implicit def intToBoolean(i: Int): Boolean = i == 1 //avoid implicit def !
 
     /*
     if (n) do something else
