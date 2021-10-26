@@ -100,7 +100,7 @@ object TypeClasses {
     /*
       Enhancing you classes with type classes
         - type classe itself : HTMLSerializer[T] { .. }
-        - type class instances (some of which are implicit): UserSerialzier, IntSerializer, ..
+        - type class instances (some of which are implicit): UserSerializer, IntSerializer, ..
         - conversions with implicits classes: HTMLEnrichment
     */
 
